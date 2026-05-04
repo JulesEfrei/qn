@@ -1,3 +1,4 @@
+use crate::logger::log;
 use directories::{ProjectDirs, UserDirs};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -17,9 +18,14 @@ impl AppConfig {
         let config_file = config_directory.join("config.yaml");
 
         if config_file.exists() {
+            log!(
+                "INFO",
+                format!("The config file exist at {}", config_file.display())
+            );
             let config = fs::read_to_string(config_file).expect("Unable to read config file");
             serde_yml::from_str(&config).expect("Unable to parse config file")
         } else {
+            log!("INFO", "The config file don't exist.\n Creating...");
             Self::setup_default_config(&config_file)
         }
     }
@@ -41,6 +47,7 @@ impl AppConfig {
         let yaml = serde_yml::to_string(&default_config).unwrap();
 
         fs::write(file, yaml).ok();
+        log!("DEBUG", format!("Config file location: {}", file.display()));
         fs::create_dir_all(&default_config.notes_path).ok();
 
         default_config

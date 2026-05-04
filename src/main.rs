@@ -1,7 +1,9 @@
 mod config;
+mod logger;
 
 use clap::{Parser, Subcommand};
 use config::AppConfig;
+use logger::log;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -20,21 +22,14 @@ enum Commands {
     },
 }
 
-macro_rules! log {
-    ($level:expr, $message:expr) => {
-        println!("[{}] {}", $level, $message);
-    };
-
-    ($level:expr, $message:expr, $file:expr, $line:expr) => {
-        println!("[{}] {} (at {}:{})", $level, $message, $file, $line);
-    };
-}
-
 fn main() {
     let config = AppConfig::load();
 
-    println!("Notes path: {}", config.notes_path.display());
-    println!("Editor: {}", config.editor);
+    log!(
+        "DEBUG",
+        format!("Notes path: {}", config.notes_path.display())
+    );
+    log!("DEBUG", format!("Editor: {}", config.editor));
 
     let cli = Cli::parse();
 
