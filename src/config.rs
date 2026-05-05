@@ -12,10 +12,7 @@ pub struct AppConfig {
 
 impl AppConfig {
     pub fn load() -> Self {
-        let project_directory =
-            ProjectDirs::from("com", "user", "qn").expect("Unable to get project directory");
-        let config_directory = project_directory.config_dir();
-        let config_file = config_directory.join("config.yaml");
+        let config_file = Self::get_config_file();
 
         if config_file.exists() {
             log!(
@@ -30,14 +27,28 @@ impl AppConfig {
         }
     }
 
-    fn setup_default_config(file: &Path) -> Self {
+    fn get_project_directory() -> PathBuf {
+        let project_directory =
+            ProjectDirs::from("com", "bayne", "qn").expect("Unable to get project directory");
+        project_directory.config_dir().to_path_buf()
+    }
+
+    fn get_config_file() -> PathBuf {
+        Self::get_project_directory().join("config.yaml")
+    }
+
+    fn get_document_directory() -> PathBuf {
         let user_dir = UserDirs::new().expect("Unable to get the user directory");
         let document_dir = user_dir
             .document_dir()
             .expect("Unable to get document directory");
-        let note_directory = document_dir.join("notes");
+        document_dir.to_path_buf()
+    }
 
-        fs::create_dir_all(&note_directory).ok();
+    fn setup_default_config(file: &Path) -> Self {
+        let note_directory = Self::get_document_directory().join("notes");
+
+        fs::create_dir_all(file.parent().unwrap()).ok();
 
         let default_config = AppConfig {
             notes_path: note_directory,
@@ -46,7 +57,7 @@ impl AppConfig {
 
         let yaml = serde_yml::to_string(&default_config).unwrap();
 
-        fs::write(file, yaml).ok();
+        fs::write(file, yaml).expect("Unable to write config file");
         log!("DEBUG", format!("Config file location: {}", file.display()));
         fs::create_dir_all(&default_config.notes_path).ok();
 
