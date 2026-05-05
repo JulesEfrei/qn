@@ -23,7 +23,13 @@ enum Commands {
 }
 
 fn main() {
-    let config = AppConfig::load();
+    let config = match AppConfig::load() {
+        Ok(config) => config,
+        Err(e) => {
+            log!("ERROR", format!("{}", e));
+            std::process::exit(1);
+        }
+    };
 
     log!(
         "DEBUG",
