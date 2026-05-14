@@ -1,9 +1,11 @@
 mod config;
 mod logger;
+mod notes;
 
 use clap::{Parser, Subcommand};
 use config::AppConfig;
 use logger::log;
+use notes::Note;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -17,6 +19,15 @@ struct Cli {
 enum Commands {
     /// Create a new quick note
     New {
+        /// Name of the new note
+        name: String,
+    },
+
+    /// List all notes
+    List,
+
+    /// Delete specific note
+    Delete {
         /// Name of the new note
         name: String,
     },
@@ -41,7 +52,13 @@ fn main() {
 
     match &cli.command {
         Some(Commands::New { name }) => {
-            println!("'myapp add' was used, name is: {name:?}");
+            Note::create(&config, name).expect("arh");
+        }
+        Some(Commands::List) => {
+            println!("List notes");
+        }
+        Some(Commands::Delete { name }) => {
+            println!("Delete following note: {name:?}");
         }
         None => {
             log!("INFO", "Running TUI application");
